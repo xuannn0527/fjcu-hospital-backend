@@ -31,7 +31,7 @@ def get_patients():
     try:
         connection = pymysql.connect(**db_config)
         with connection.cursor() as cursor:
-            # 使用同學寫的完整三表聯查 (JOIN)
+            # 完整三表聯查 (JOIN)
             sql = """
                 SELECT 
                     p.patient_id, p.name, p.gender, p.drug_allergy, p.past_medical_history,
