@@ -34,11 +34,36 @@ def get_patients():
             # 完整三表聯查 (JOIN)
             sql = """
                 SELECT 
-                    p.patient_id, p.name, p.gender, p.drug_allergy, p.past_medical_history,
-                    t.triage_id, t.created_at, t.final_level,
-                    v.temperature, v.heart_rate, v.spo2, v.respiratory_rate,
-                    v.blood_pressure_sys, v.blood_pressure_dia, 
-                    v.sentiment, v.past_medical_history_y, v.allergy
+                    p.patient_id, 
+                    p.name, 
+                    p.id_number,
+                    p.birth_date,
+                    p.medical_number,
+                    p.gender,
+                    p.drug_allergy,
+                    p.past_medical_history,
+                    p.do_not_treat,
+                    
+                    t.triage_id,
+                    t.created_at,
+                    t.final_level,
+                    
+                    v.temperature, 
+                    v.heart_rate,
+                    v.spo2,
+                    v.respiratory_rate,
+                    v.weight,
+                    v.blood_pressure_sys, 
+                    v.blood_pressure_dia, 
+                    v.blood_sugar,
+                    v.gcs_eye, 
+                    v.gcs_verbal, 
+                    v.gcs_motor,
+                    v.past_medical_history_y,
+                    v.do_not_treat,
+                    v.allergy,
+                    v.pain_score,
+                    v.sentiment  
                 FROM patients p
                 LEFT JOIN triage_record t ON p.patient_id = t.patient_id
                 LEFT JOIN vital_signs v ON t.triage_id = v.triage_id
