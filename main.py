@@ -4,11 +4,8 @@ import os
 from dotenv import load_dotenv
 import pymysql
 import random
-import os
-from dotenv import load_dotenv
 
-load_dotenv() # 讓程式啟動時去讀取 .env 檔案
-
+# 讓程式啟動時去讀取 .env 檔案
 load_dotenv()
 
 app = FastAPI()
@@ -21,22 +18,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-db_password = os.getenv("DB_PASSWORD", "")
-
+# 資料庫連線設定 (整合環境變數與預設值)
 db_config = {
-<<<<<<< HEAD
     'host': os.getenv('DB_HOST', '127.0.0.1'),
     'user': os.getenv('DB_USER', 'root'),
     'password': os.getenv('DB_PASSWORD', ''),
     'database': os.getenv('DB_NAME', 'fjcu_hospital'),
     'port': int(os.getenv('DB_PORT', 3306)),
-=======
-    'host': '127.0.0.1',  
-    'user': 'root',                  
-    'password': db_password,     
-    'database': 'fjcu_hospital', 
-    'port': 3306,                    
->>>>>>> 93a43b514f9de1a9ba49c6697f8119468ad0ab99
     'cursorclass': pymysql.cursors.DictCursor
 }
 
@@ -49,16 +37,9 @@ def get_patients():
     try:
         connection = pymysql.connect(**db_config)
         with connection.cursor() as cursor:
-            # 配合剛才提供的 .sql 結構，將表名改為 triage_records
+            # 整合兩邊的 SQL 查詢欄位（包含年齡、生日、血氧等完整資訊）
             sql = """
                 SELECT 
-<<<<<<< HEAD
-                    p.patient_id, p.name, p.gender,
-                    t.triage_id, t.triage_level, t.chief_complaint,
-                    v.measured_at, v.temperature, v.heart_rate, v.spo2, v.respiratory_rate,
-                    v.systolic_bp AS blood_pressure_sys, 
-                    v.diastolic_bp AS blood_pressure_dia
-=======
                     p.patient_id, 
                     p.name, 
                     p.gender,
@@ -76,7 +57,6 @@ def get_patients():
                     v.systolic_bp AS blood_pressure_sys, 
                     v.diastolic_bp AS blood_pressure_dia, 
                     v.spo2
->>>>>>> 93a43b514f9de1a9ba49c6697f8119468ad0ab99
                 FROM patients p
                 LEFT JOIN triage_records t ON p.patient_id = t.patient_id
                 LEFT JOIN vital_signs v ON p.patient_id = v.patient_id
