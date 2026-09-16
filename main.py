@@ -2,6 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import pymysql
 import random
+import os
+from dotenv import load_dotenv
+
+load_dotenv() # 讓程式啟動時去讀取 .env 檔案
 
 app = FastAPI()
 
@@ -14,11 +18,11 @@ app.add_middleware(
 )
 
 db_config = {
-    'host': 'sakura.proxy.rlwy.net',  
-    'user': 'root',                   
-    'password': 'VkCFiGIDmtkeeyzrpNAScrScMrATHOBL', 
-    'database': 'railway',            
-    'port': 58793,                    
+    'host': os.getenv('DB_HOST', '127.0.0.1'),
+    'user': os.getenv('DB_USER', 'root'),
+    'password': os.getenv('DB_PASSWORD', ''),
+    'database': os.getenv('DB_NAME', 'fjcu_hospital'),
+    'port': int(os.getenv('DB_PORT', 3306)),
     'cursorclass': pymysql.cursors.DictCursor
 }
 
@@ -34,14 +38,14 @@ def get_patients():
             # 完整三表聯查 (JOIN)
             sql = """
                 SELECT 
-                    p.patient_id, p.name, p.gender, p.drug_allergy, p.past_medical_history,
-                    t.triage_id, t.created_at, t.final_level,
-                    v.temperature, v.heart_rate, v.spo2, v.respiratory_rate,
-                    v.blood_pressure_sys, v.blood_pressure_dia, 
-                    v.sentiment, v.past_medical_history_y, v.allergy
+                    p.patient_id, p.name, p.gender,
+                    t.triage_id, t.triage_level, t.chief_complaint,
+                    v.measured_at, v.temperature, v.heart_rate, v.spo2, v.respiratory_rate,
+                    v.systolic_bp AS blood_pressure_sys, 
+                    v.diastolic_bp AS blood_pressure_dia
                 FROM patients p
-                LEFT JOIN triage_record t ON p.patient_id = t.patient_id
-                LEFT JOIN vital_signs v ON t.triage_id = v.triage_id
+                LEFT JOIN triage_records t ON p.patient_id = t.patient_id
+                LEFT JOIN vital_signs v ON p.patient_id = v.patient_id
             """
             cursor.execute(sql)
             results = cursor.fetchall()
