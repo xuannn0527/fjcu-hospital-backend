@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import pymysql
 import random
+import json  # 匯入 json 模組以解析資料庫中的 JSON 字串
 
 # 讓程式啟動時去讀取 .env 檔案
 load_dotenv()
@@ -82,6 +83,45 @@ def get_patients():
                 score = min(99, score + 15)
                 
             row['risk_score'] = score
+
+        return results
+    except Exception as e:
+        print("資料庫連線錯誤:", str(e))
+        return {"error": str(e)}
+# ---------------------------------------------------------
+# 新增：讀取醫生 AI 預測結果數據的 API (對應 ai_triage_predictions 表)
+# ---------------------------------------------------------
+@app.get("/api/predictions")
+def get_predictions():
+    try:
+        connection = pymysql.connect(**db_config)
+        with connection.cursor() as cursor:
+            # 按重症風險機率高至低排序
+            sql = "SELECT * FROM ai_triage_predictions ORDER BY serious_risk_pct DESC"
+            cursor.execute(sql)
+            results = cursor.fetchall()
+        connection.close()
+
+        # 處理日期時間格式與 JSON 解析
+        for row in results:
+            # ★ 讀取資料庫中的 arrival_time 並格式化為 HH:MM (例如 10:25)
+            if row.get('arrival_time'):
+                row['arrivalTime'] = row['arrival_time'].strftime("%H:%M")
+            else:
+                row['arrivalTime'] = "10:00"
+
+            if row.get('admit_distribution'):
+                try:
+                    row['admit_distribution'] = json.loads(row['admit_distribution'])
+                except Exception:
+                    pass
+            # ★ 確保前端可以直接讀取 complaint（對應資料庫的 complaint 欄位）
+            # 如果資料庫欄位名稱大小寫或拼寫不同，也可以在這裡做統一對應
+            if row.get('complaint'):
+                row['complaint'] = row['complaint']
+            else:
+                row['complaint'] = "無特殊主訴紀錄"
+
 
         return results
     except Exception as e:
